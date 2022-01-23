@@ -1,4 +1,4 @@
-//backend//nodemon scraping.js => for printing in Terminal
+//nodemon scraping.js => for printing in Terminal
 
 const axios = require('axios'); 
 const cheerio = require('cheerio');
@@ -67,6 +67,7 @@ for (let i = 1; i < 50; i++) {
         });
 };
  
+// exemples:
         // console.log(
         //             $('.className') // classname
         //                 // .children('a') //all the children that have <a> tag
