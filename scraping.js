@@ -3,9 +3,9 @@
 const axios = require('axios'); 
 const cheerio = require('cheerio');
 
-for (let i = 1; i < 50; i++) {
+for (let i = 1; i < 3; i++) {
 
-    axios.get(`https://etherscan.io/blocks?ps=100&p=${i}`)
+    axios.get(`https://etherscan.io/blocks?ps=10&p=${i}`)
         .then( res => {
             const data = [];
             const $ = cheerio.load(res.data);
@@ -59,14 +59,18 @@ for (let i = 1; i < 50; i++) {
                 .text()
                 // console.log(burntFees);   
 
-                // data[index] = { block, date, txn, gasUsed, gasLimit, baseFee, reward, burntFees};
-                data[index] = { block };
+                data[index] = { block, date, txn, gasUsed, gasLimit, baseFee, reward, burntFees};
+                // data[index] = { block };
 
             });
-            console.log(data);
+            // console.log(data);
+
+            const jsonData = JSON.stringify(data);
+            console.log(jsonData);
+
         });
 };
- 
+
 // exemples:
         // console.log(
         //             $('.className') // classname
