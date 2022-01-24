@@ -18,8 +18,8 @@ const csv = createCSV({
     ],
   });
 
- for (let i = 1; i < 4; i++) {
-    axios.get(`https://etherscan.io/blocks?ps=10&p=${i}`)
+ for (let i = 1; i < 11; i++) {
+    axios.get(`https://etherscan.io/blocks?ps=100&p=${i}`)
         .then( res => {
 
             let data = [];
@@ -80,7 +80,7 @@ const csv = createCSV({
         updateCsv()
         async function updateCsv(){
             await csv.writeRecords(data)
-            .then(() => { console.log("Done!"); });
-            console.log(data);
+              .then(() => { console.log("Done!"); });
+              console.log(data);
     }}); 
 };
