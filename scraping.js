@@ -1,13 +1,8 @@
 //nodemon scraping.js => for printing in Terminal
-
 const axios = require('axios'); 
 const cheerio = require('cheerio');
 const createCSV = require('csv-writer').createObjectCsvWriter;
-// var fs = require('fs');
-// var json2csv = require('json2csv');
 
-// var newLine = '\r\n';
-// var fields = ['block', 'date', 'txn', 'gasUsed', 'gasLimit', 'baseFee', 'reward', 'burntFees'];
 const csv = createCSV({
     path: "demoD.csv",
     append: true,
@@ -23,13 +18,14 @@ const csv = createCSV({
     ],
   });
 
-for (let i = 1; i < 4; i++) {
+ for (let i = 1; i < 4; i++) {
     axios.get(`https://etherscan.io/blocks?ps=10&p=${i}`)
         .then( res => {
+
             let data = [];
             const $ = cheerio.load(res.data);
-            $('tr').each((index, element) => {
 
+            $('tr').each((index, element) => {
                 //block
                 const block = $(element)
                 .children('td:nth-child(1)')
@@ -79,59 +75,12 @@ for (let i = 1; i < 4; i++) {
                 // console.log(burntFees);   
 
                 data[index] = { block, date, txn, gasUsed, gasLimit, baseFee, reward, burntFees };
-                // data[index] = { block };
-
-                // var toCsv = {
-                //     data: data,
-                //     fields: fields,
-                //     header: false,
-                //   };
-                //   fs.stat('file.csv', function (err, stat) {
-                //     if (err == null) {
-                //       console.log('File exists');
-                  
-                //       //write the actual data and end with newline
-                //       var csv = json2csv(toCsv) + newLine;
-                  
-                //       fs.appendFile('file.csv', csv, function (err) {
-                //         if (err) throw err;
-                //         console.log('The "data to append" was appended to file!');
-                //       });
-                //     } else {
-                //       //write the headers and newline
-                //       console.log('New file, just writing headers');
-                //       fields = fields + newLine;
-                  
-                //       fs.writeFile('file.csv', fields, function (err) {
-                //         if (err) throw err;
-                //         console.log('file saved');
-                //       });
-                //     }
-                //   });
     
-                csv.writeRecords(data)
-                  .then(() => { console.log("Done!"); });
-                  console.log(data);
-                //   data = [];
-            });
-
-        
-            // const jsonData = JSON.stringify(data);
-            // console.log(jsonData);
-
         });
-
-
+        updateCsv()
+        async function updateCsv(){
+            await csv.writeRecords(data)
+            .then(() => { console.log("Done!"); });
+            console.log(data);
+    }}); 
 };
-
-// exemples:
-        // console.log(
-        //             $('.className') // classname
-        //                 // .children('a') //all the children that have <a> tag
-        //                 .children()
-        //                 .first()
-        //                 // .last()
-        //                 .text()
-        //                 // .html()
-        //                 // .attr('href')
-        //     );
