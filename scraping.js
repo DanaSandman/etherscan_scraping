@@ -31,11 +31,8 @@ let i = 1
 async function scarp(){
   
     console.log('start', i, 'date', gLastDate, 'length', gData.length);
-
     await sleep(3000);
-    
     let res = await axios.get(`https://etherscan.io/blocks?ps=100&p=${i}`)
-
     const $ = cheerio.load(res.data);
 
     $('tr').each(async (index, element) => {
@@ -52,15 +49,17 @@ async function scarp(){
         // console.log('date', date);
 
         //txn
-        const txn = $(element)
+        let txn = $(element)
         .children('td:nth-child(4)')
         .text()
+        txn = parseInt(txn);
         // console.log(txn);
 
         //gasUsed
-        const gasUsed = $(element)
+        let gasUsed = $(element)
         .children('td:nth-child(7)')
         .text()
+        gasUsed = parseInt(gasUsed.slice(0, gasUsed.search(' ')).replace(/,/g, ''));
         // console.log(gasUsed);
 
         //gasLimit
@@ -70,36 +69,37 @@ async function scarp(){
         // console.log(gasLimit);
 
         //baseFee
-        const baseFee = $(element)
+        let baseFee = $(element)
         .children('td:nth-child(9)')
         .text()
+        baseFee = parseFloat(baseFee.replace(' Gwei', ''));
         // console.log(baseFee);
 
         //reward
-        const reward = $(element)
+        let reward = $(element)
         .children('td:nth-child(10)')
         .text()
+        reward = parseFloat(reward.replace(' Ether', ''));
         // console.log(reward);
 
         //burnt fees 
-        const burntFees = $(element)
+        let burntFees = $(element)
         .children('td:nth-child(11)')
         .text()
+        burntFees = parseFloat(burntFees.slice(0, burntFees.search(' ')));
         // console.log(burntFees);   
 
         if(block > 0){
-
           let curDate = new Date(date).getDate();
-
           // console.log('curDate', curDate);
           // console.log('gLastDate', gLastDate);
-
           if(gLastDate === 0){
             gLastDate = curDate
           }
           else if(curDate < gLastDate){
               console.log('gLastDate', gLastDate);
               console.log('curDate', curDate);
+              //End of day
               // Add to DB
               // await csv.writeRecords(gData)
               console.log('end of the day', gLastDate, 'updateCsv', gData.length);
@@ -114,9 +114,10 @@ async function scarp(){
               });
 
       i++ 
-      if(i<70){
+      //Pages number
+      // if(i<70){
+      if(i<2){
         scarp()
-
     }
 
 };
