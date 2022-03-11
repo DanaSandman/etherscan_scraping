@@ -87,7 +87,7 @@ async function scarp(){
         .children('td:nth-child(11)')
         .text()
         burntFees = parseFloat(burntFees.slice(0, burntFees.search(' ')));
-        // console.log(burntFees);   
+        console.log('burntFees',burntFees);   
 
         if(block > 0){
           let curDate = new Date(date).getDate();
@@ -96,23 +96,53 @@ async function scarp(){
           if(gLastDate === 0){
             gLastDate = curDate
           }
-          else if(curDate < gLastDate){
+          // else if(curDate < gLastDate){
+            else if(curDate = gLastDate){
               console.log('gLastDate', gLastDate);
               console.log('curDate', curDate);
+
               //End of day
+
+              let startBlock = gData[0].block;
+              let endBlock = gData[gData.length-1].block;
+              let totalBurnt = gData.reduce(
+                (acc, curr) => acc + curr.burntFees, 0
+              );
+              console.log('totalBurnt',totalBurnt);
+              let totalreward = gData.reduce(
+                (acc, curr) => acc + curr.reward, 0
+              );
+              console.log('totalreward',totalreward);
+              let totalTxn = gData.reduce(
+                (acc, curr) => acc + curr.txn, 0
+              );
+              console.log('totalTxn',totalTxn);
+              let startDate = gData[0].date;
+              let endDate = gData[gData.length-1].date;
+            
+              let item = {
+                startDate,
+                endDate,
+                startBlock,
+                endBlock,
+                totalBurnt,
+                totalreward,
+                totalTxn,
+                blocksData: gData,
+              };
+
+              console.log('ítem',item);
               // Add to DB
               // await csv.writeRecords(gData)
               console.log('end of the day', gLastDate, 'updateCsv', gData.length);
               console.log('start block', gData[0].block)
               console.log('end block', gData[gData.length-1].block);
               gLastDate = curDate
-              gData = []
+              // gData = []
           }
-
           gData.push({ block, date, txn, gasUsed, gasLimit, baseFee, reward, burntFees });
               }
               });
-
       i++ 
       //Pages number
       // if(i<70){
