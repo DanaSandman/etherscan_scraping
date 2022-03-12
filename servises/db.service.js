@@ -4,8 +4,8 @@ const config = require('../config');
 module.exports = {
     getCollection
 }
-// const dbName = 'ETHER_BURN_DB'// MongoDB Atlas - prod
-const dbName = 'ETHER_BURN_DB_LOCAL'// MongoDB Local - dev
+const dbName = 'ETHER_BURN_DB'// MongoDB Atlas - prod
+// const dbName = 'ETHER_BURN_DB_LOCAL'// MongoDB Local - dev
 
 var dbConn = null
 
