@@ -19,19 +19,19 @@ const csv = createCSV({
   });
 
 let gLastDate = 0
-  
 let gData = [];
+let i = 1
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-let i = 1
-
 async function scarp(){
   
-    console.log('start', i, 'date', gLastDate, 'length', gData.length);
-    await sleep(3000);
+    console.log('start', i, 'Last date', gLastDate, 'length', gData.length);
+
+    await sleep(1500);
+
     let res = await axios.get(`https://etherscan.io/blocks?ps=100&p=${i}`)
     const $ = cheerio.load(res.data);
 
@@ -87,66 +87,68 @@ async function scarp(){
         .children('td:nth-child(11)')
         .text()
         burntFees = parseFloat(burntFees.slice(0, burntFees.search(' ')));
-        console.log('burntFees',burntFees);   
+        // console.log('burntFees',burntFees);   
 
         if(block > 0){
-          let curDate = new Date(date).getDate();
+          let curFullDate = new Date(date);
+          let curDate = curFullDate.getDate();
           // console.log('curDate', curDate);
           // console.log('gLastDate', gLastDate);
+
           if(gLastDate === 0){
             gLastDate = curDate
           }
-          // else if(curDate < gLastDate){
-            else if(curDate = gLastDate){
-              console.log('gLastDate', gLastDate);
-              console.log('curDate', curDate);
+          else if(curDate < gLastDate){
 
-              //End of day
+            console.log('end of the day', gLastDate, 'length', gData.length);
 
-              let startBlock = gData[0].block;
-              let endBlock = gData[gData.length-1].block;
-              let totalBurnt = gData.reduce(
-                (acc, curr) => acc + curr.burntFees, 0
-              );
-              console.log('totalBurnt',totalBurnt);
-              let totalreward = gData.reduce(
-                (acc, curr) => acc + curr.reward, 0
-              );
-              console.log('totalreward',totalreward);
-              let totalTxn = gData.reduce(
-                (acc, curr) => acc + curr.txn, 0
-              );
-              console.log('totalTxn',totalTxn);
-              let startDate = gData[0].date;
-              let endDate = gData[gData.length-1].date;
-            
               let item = {
-                startDate,
-                endDate,
-                startBlock,
-                endBlock,
-                totalBurnt,
-                totalreward,
-                totalTxn,
+                date: new Date(gData[0].date.slice(0,10)),
+                startDate: gData[0].date,
+                endDate: gData[gData.length-1].date,
+                startBlock: gData[0].block,
+                endBlock: gData[gData.length-1].block,
+                totalBurnt: gData.reduce(
+                  (acc, curr) => acc + curr.burntFees, 0
+                ),
+                totalreward: gData.reduce(
+                  (acc, curr) => acc + curr.reward, 0
+                ),
+                totalTxn: gData.reduce(
+                  (acc, curr) => acc + curr.txn, 0
+                ),
                 blocksData: gData,
               };
 
-              console.log('ítem',item);
+
               // Add to DB
               // await csv.writeRecords(gData)
-              console.log('end of the day', gLastDate, 'updateCsv', gData.length);
-              console.log('start block', gData[0].block)
-              console.log('end block', gData[gData.length-1].block);
+              
+              console.log('start block', item.blocksData[0]);
+              console.log('end block', item.blocksData[item.blocksData.length-1]);
+              console.log('date', item.date);
+              console.log('totalBurnt', item.totalBurnt);
+              
               gLastDate = curDate
-              // gData = []
+              gData = []
           }
-          gData.push({ block, date, txn, gasUsed, gasLimit, baseFee, reward, burntFees });
+          const iSblockNum = gData.find(element => {
+            if (element.block === block) {
+              console.log('duble');
+              return true;
+            }else{
+                return false
+              }
+            })
+          if(!iSblockNum){
+            gData.push({ block, date, txn, gasUsed, gasLimit, baseFee, reward, burntFees });
+          }
               }
               });
       i++ 
       //Pages number
-      // if(i<70){
-      if(i<2){
+      if(i<100){
+      // if(i<2){
         scarp()
     }
 
