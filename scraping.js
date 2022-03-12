@@ -2,6 +2,8 @@
 const axios = require('axios'); 
 const cheerio = require('cheerio');
 const createCSV = require('csv-writer').createObjectCsvWriter;
+// import { from } from 'json2csv/JSON2CSVTransform';
+const { saveItem } = require('./item.controller');
 
 const csv = createCSV({
     path: "demoD.csv",
@@ -122,6 +124,7 @@ async function scarp(){
 
 
               // Add to DB
+              addToDb(item)
               // await csv.writeRecords(gData)
               
               console.log('start block', item.blocksData[0]);
@@ -147,7 +150,7 @@ async function scarp(){
               });
       i++ 
       //Pages number
-      if(i<100){
+      if(i<300){
       // if(i<2){
         scarp()
     }
@@ -156,3 +159,6 @@ async function scarp(){
 
 scarp()
 
+function addToDb(item){
+  saveItem(item);
+}
