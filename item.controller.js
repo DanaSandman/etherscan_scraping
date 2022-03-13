@@ -2,6 +2,7 @@ const itemService = require('./servises/item.service')
 
 module.exports = {
     saveItem,
+    getItems
 }
 //ADD
 async function saveItem(item) {
@@ -13,5 +14,18 @@ async function saveItem(item) {
             err: 'Failed to add item'
         // })
     }
-}
+};
+
+//LIST
+async function getItems() {
+    try {
+        const items = await itemService.query()
+        return items
+    } catch (err) {
+        // res.status(500).send({
+            err: 'Failed to get nfts'
+        // })
+    }
+};
+
 

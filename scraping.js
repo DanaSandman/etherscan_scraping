@@ -5,6 +5,8 @@ const createCSV = require('csv-writer').createObjectCsvWriter;
 // import { from } from 'json2csv/JSON2CSVTransform';
 const { saveItem } = require('./item.controller');
 
+const { getWeekItems } = require('./dataVariants');
+
 const csv = createCSV({
     path: "demoD.csv",
     append: true,
@@ -31,7 +33,6 @@ function sleep(ms) {
 async function scarp(){
   
     console.log('start', i, 'Last date', gLastDate, 'length', gData.length);
-
     await sleep(1500);
 
     let res = await axios.get(`https://etherscan.io/blocks?ps=100&p=${i}`)
@@ -96,12 +97,10 @@ async function scarp(){
           let curDate = curFullDate.getDate();
           // console.log('curDate', curDate);
           // console.log('gLastDate', gLastDate);
-
           if(gLastDate === 0){
             gLastDate = curDate
           }
           else if(curDate < gLastDate){
-
             console.log('end of the day', gLastDate, 'length', gData.length);
 
               let item = {
@@ -124,7 +123,7 @@ async function scarp(){
 
 
               // Add to DB
-              addToDb(item)
+              // addToDb(item)
               // await csv.writeRecords(gData)
               
               console.log('start block', item.blocksData[0]);
@@ -152,12 +151,12 @@ async function scarp(){
       //Pages number
       if(i<300){
       // if(i<2){
-        scarp()
+        // scarp()
     }
 
 };
 
-scarp()
+// scarp()
 
 function addToDb(item){
   saveItem(item);
