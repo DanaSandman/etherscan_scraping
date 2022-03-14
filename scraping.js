@@ -31,7 +31,6 @@ function sleep(ms) {
 }
 
 async function scarp(){
-  
     console.log('start', i, 'Last date', gLastDate, 'length', gData.length);
     await sleep(1500);
 
@@ -123,7 +122,7 @@ async function scarp(){
 
 
               // Add to DB
-              // addToDb(item)
+              addToDb(item)
               // await csv.writeRecords(gData)
               
               console.log('start block', item.blocksData[0]);
@@ -146,17 +145,16 @@ async function scarp(){
             gData.push({ block, date, txn, gasUsed, gasLimit, baseFee, reward, burntFees });
           }
               }
-              });
+          });
       i++ 
       //Pages number
-      if(i<300){
-      // if(i<2){
-        // scarp()
+      if(i<1100){ //for week
+    //   // if(i<2){
+        scarp()
     }
 
 };
-
-// scarp()
+scarp()
 
 function addToDb(item){
   saveItem(item);
