@@ -105,10 +105,10 @@ async function scarp(){
               let item = {
                 variant: "day",
                 date: new Date(gData[0].date.slice(0,10)),
-                startDate: gData[0].date,
-                endDate: gData[gData.length-1].date,
-                startBlock: gData[0].block,
-                endBlock: gData[gData.length-1].block,
+                startDate: gData[gData.length-1].date,
+                endDate: gData[0].date,
+                startBlock: gData[gData.length-1].block,
+                endBlock: gData[0].block,
                 totalBurnt: gData.reduce(
                   (acc, curr) => acc + curr.burntFees, 0
                 ),
@@ -149,7 +149,7 @@ async function scarp(){
           });
       i++ 
       //Pages number
-      if(i<1100){ //for week
+      if(i<110){ //for week
     //   // if(i<2){
         scarp()
     }
