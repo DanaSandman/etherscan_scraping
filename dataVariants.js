@@ -22,6 +22,7 @@ async function makeWeekItem(items){
     console.log('items[7].endDate',items[items.length -1].endDate);
 
     const weekItem = {
+        variant: "week",
         startDate: items[0].startDate,
         endDate: items[items.length -1].endDate,
         startBlock: items[0].startBlock,
@@ -59,3 +60,5 @@ async function makeWeekItem(items){
 module.exports = {
     getWeekItems,
 }
+
+makeWeekItem();

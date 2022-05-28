@@ -103,6 +103,7 @@ async function scarp(){
             console.log('end of the day', gLastDate, 'length', gData.length);
 
               let item = {
+                variant: "day",
                 date: new Date(gData[0].date.slice(0,10)),
                 startDate: gData[0].date,
                 endDate: gData[gData.length-1].date,
