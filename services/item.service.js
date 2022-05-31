@@ -1,4 +1,4 @@
-const dbService = require('../servises/db.service');
+const dbService = require('../services/db.service');
 
 //SAVE
 async function save(item) {

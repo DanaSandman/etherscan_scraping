@@ -55,10 +55,9 @@ async function makeWeekItem(items){
         console.log('The End');
       }
   };
-  getWeekItems()
+  // getWeekItems()
 
 module.exports = {
     getWeekItems,
 }
 
-makeWeekItem();

@@ -1,30 +1,29 @@
 //nodemon scraping.js => for printing in Terminal
 const axios = require('axios'); 
 const cheerio = require('cheerio');
-const createCSV = require('csv-writer').createObjectCsvWriter;
+// const createCSV = require('csv-writer').createObjectCsvWriter;
 // import { from } from 'json2csv/JSON2CSVTransform';
 const { saveItem } = require('./item.controller');
-
 const { getWeekItems } = require('./dataVariants');
 
-const csv = createCSV({
-    path: "demoD.csv",
-    append: true,
-    header: [
-      {id: "block", title: "block"},
-      {id: "date", title: "date"},
-      {id: "txn", title: "txn"},
-      {id: "gasUsed", title: "gasUsed"},
-      {id: "gasLimit", title: "gasLimit"},
-      {id: "baseFee", title: "baseFee"},
-      {id: "reward", title: "reward"},
-      {id: "burntFees", title: "burntFees"},
-    ],
-  });
+// const csv = createCSV({
+//     path: "demoD.csv",
+//     append: true,
+//     header: [
+//       {id: "block", title: "block"},
+//       {id: "date", title: "date"},
+//       {id: "txn", title: "txn"},
+//       {id: "gasUsed", title: "gasUsed"},
+//       {id: "gasLimit", title: "gasLimit"},
+//       {id: "baseFee", title: "baseFee"},
+//       {id: "reward", title: "reward"},
+//       {id: "burntFees", title: "burntFees"},
+//     ],
+//   });
 
 let gLastDate = 0
 let gData = [];
-let i = 1
+let i = 1725
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -94,12 +93,10 @@ async function scarp(){
         if(block > 0){
           let curFullDate = new Date(date);
           let curDate = curFullDate.getDate();
-          // console.log('curDate', curDate);
-          // console.log('gLastDate', gLastDate);
           if(gLastDate === 0){
             gLastDate = curDate
           }
-          else if(curDate < gLastDate){
+          else if(curDate !== gLastDate){
             console.log('end of the day', gLastDate, 'length', gData.length);
 
               let item = {
@@ -149,14 +146,14 @@ async function scarp(){
           });
       i++ 
       //Pages number
-      if(i<110){ //for week
-    //   // if(i<2){
+      if(i < 19200 ){ 
         scarp()
     }
-
 };
-scarp()
+//to start scraping call this function 
+// scarp()
 
 function addToDb(item){
   saveItem(item);
 }
+

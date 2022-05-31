@@ -1,4 +1,4 @@
-const itemService = require('./servises/item.service')
+const itemService = require('./services/item.service')
 
 module.exports = {
     saveItem,
