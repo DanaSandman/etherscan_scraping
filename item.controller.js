@@ -11,21 +11,20 @@ async function saveItem(item) {
     } catch (err) {
         // logger.error('Failed to add item', err)
         // res.status(500).send({
-            err: 'Failed to add item'
+        err: 'Failed to add item'
         // })
     }
 };
 
 //LIST
 async function getItems() {
+    console.log('get items controller');
     try {
         const items = await itemService.query()
         return items
     } catch (err) {
         // res.status(500).send({
-            err: 'Failed to get nfts'
+        err: 'Failed to get nfts'
         // })
     }
 };
-
-

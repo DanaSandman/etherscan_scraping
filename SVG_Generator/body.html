@@ -1,0 +1,825 @@
+<body>
+
+    <!-- SVG container -->
+    <div id="svg-container">
+    </div>
+    <svg id="textsvg"></svg>
+    <svg id="toptextsvg"></svg>
+
+    <script type="text/javascript">
+        function createSVG(width, height) {
+            return d3.create("svg").attr("width", width).attr("height", height).node();
+        }
+
+        function generateAreaPath(
+            data, {
+                x = ([x]) => x, // given d in data, returns the (temporal) x-value
+                y = ([, y]) => y, // given d in data, returns the (quantitative) y-value
+                defined,
+                width = 250,
+                height = 100
+            }
+        ) {
+            // Compute values.
+            const X = d3.map(data, x);
+            const Y = d3.map(data, y);
+            const I = d3.range(X.length);
+
+            // Compute which data points are considered defined.
+            if (defined === undefined) defined = (d, i) => !isNaN(X[i]) && !isNaN(Y[i]);
+            const D = d3.map(data, defined);
+
+            // Compute default domains.
+            const xDomain = d3.extent(X);
+            const yDomain = [0, d3.max(Y)];
+
+            const xRange = [0, width]; // [left, right]
+            const yRange = [height, 0]; // [bottom, top]
+
+            // Construct scales and axes.
+            const xScale = d3.scaleSequential(xDomain, xRange);
+            const yScale = d3.scaleLinear(yDomain, yRange);
+
+            // Construct an area generator.
+            const area = d3
+                .area()
+                .defined((i) => D[i])
+                .curve(d3.curveBasis)
+                .x((i) => xScale(X[i]))
+                .y0(yScale(0))
+                .y1((i) => yScale(Y[i]));
+
+            return area(I);
+        }
+
+        function generateLinePath(
+            data, {
+                x = ([x]) => x, // given d in data, returns the (temporal) x-value
+                y = ([, y]) => y, // given d in data, returns the (quantitative) y-value
+                defined,
+                width = 250,
+                height = 100
+            }
+        ) {
+            // Compute values.
+            const X = d3.map(data, x);
+            const Y = d3.map(data, y);
+            const I = d3.range(X.length);
+
+            // Compute which data points are considered defined.
+            if (defined === undefined) defined = (d, i) => !isNaN(X[i]) && !isNaN(Y[i]);
+            const D = d3.map(data, defined);
+
+            // Compute default domains.
+            const xDomain = d3.extent(X);
+            const yDomain = [0, d3.max(Y)];
+
+            const xRange = [0, width]; // [left, right]
+            const yRange = [height, 0]; // [bottom, top]
+
+            // Construct scales and axes.
+            const xScale = d3.scaleSequential(xDomain, xRange);
+            const yScale = d3.scaleLinear(yDomain, yRange);
+
+            // Construct a line generator.
+            const line = d3
+                .line()
+                .curve(d3.curveBasis)
+                .x((i) => xScale(X[i]))
+                .y((i) => yScale(Y[i]));
+            return line(I);
+        }
+        // https://observablehq.com/@zechasault/path-to-zdog-path
+        function pathToZdogPath(path, z = 0) {
+            let pathParsed = parseSVGPath(path);
+            let lastPos = [0, 0];
+            let Zpath = [];
+            let lastCPos = undefined;
+            let p = pathParsed.forEach((d) => {
+                if (d[0] === "L") {
+                    Zpath.push({
+                        line: {
+                            x: d[1],
+                            y: d[2],
+                            z
+                        }
+                    });
+                    lastPos = [d[1], d[2]];
+                } else if (d[0] === "V") {
+                    Zpath.push({
+                        line: {
+                            x: lastPos[0],
+                            y: d[1],
+                            z
+                        }
+                    });
+                    lastPos = [lastPos[0], d[1]];
+                } else if (d[0] === "H") {
+                    Zpath.push({
+                        line: {
+                            x: d[1],
+                            y: lastPos[1],
+                            z
+                        }
+                    });
+                    lastPos = [d[1], lastPos[1]];
+                } else if (d[0] === "M") {
+                    Zpath.push({
+                        move: {
+                            x: d[1],
+                            y: d[2],
+                            z
+                        }
+                    });
+                    lastPos = [d[1], d[2]];
+                } else if (d[0] === "C") {
+                    Zpath.push({
+                        bezier: [{
+                                x: d[1],
+                                y: d[2],
+                                z
+                            },
+                            {
+                                x: d[3],
+                                y: d[4],
+                                z
+                            },
+                            {
+                                x: d[5],
+                                y: d[6],
+                                z
+                            },
+                        ],
+                    });
+                    lastCPos = [d[3], d[4]];
+                    lastPos = [d[5], d[6]];
+                } else if (d[0] === "S") {
+                    let x = lastCPos ? lastPos[0] - lastCPos[0] : 0;
+                    let y = lastCPos ? lastPos[1] - lastCPos[1] : 0;
+                    let p = Zpath.push({
+                        bezier: [{
+                                x: lastPos[0] + x,
+                                y: lastPos[1] + y,
+                                z,
+                            },
+                            {
+                                x: d[1],
+                                y: d[2],
+                                z
+                            },
+                            {
+                                x: d[3],
+                                y: d[4],
+                                z
+                            },
+                        ],
+                    });
+                    lastCPos = [d[1], d[2]];
+                    lastPos = [d[3], d[4]];
+                } else if (d[0] === "Q") {
+                    let x = lastCPos ? lastPos[0] - lastCPos[0] : 0;
+                    let y = lastCPos ? lastPos[1] - lastCPos[1] : 0;
+                    let p = Zpath.push({
+                        bezier: [{
+                                x: lastPos[0] + x,
+                                y: lastPos[1] + y,
+                                z,
+                            },
+                            {
+                                x: d[1],
+                                y: d[2],
+                                z
+                            },
+                            {
+                                x: d[3],
+                                y: d[4],
+                                z
+                            },
+                        ],
+                    });
+                    lastCPos = [d[1], d[2]];
+                    lastPos = [d[3], d[4]];
+                }
+
+                if (d[0] !== "C" && d[0] !== "S") lastCPos = undefined;
+            });
+            return Zpath;
+        }
+
+        function parseSVGPath(svgPath) {
+            //https://github.com/jkroso/parse-svg-path/blob/master/index.js
+
+            var length = {
+                a: 7,
+                c: 6,
+                h: 1,
+                l: 2,
+                m: 2,
+                q: 4,
+                s: 4,
+                t: 2,
+                v: 1,
+                z: 0
+            };
+
+            /**
+             * segment pattern
+             * @type {RegExp}
+             */
+
+            var segment = /([astvzqmhlc])([^astvzqmhlc]*)/gi;
+
+            /**
+             * parse an svg path data string. Generates an Array
+             * of commands where each command is an Array of the
+             * form `[command, arg1, arg2, ...]`
+             *
+             * @param {String} path
+             * @return {Array}
+             */
+
+            function parse(path) {
+                var data = [];
+                path.replace(segment, function (_, command, args) {
+                    var type = command.toLowerCase();
+                    args = parseValues(args);
+
+                    // overloaded moveTo
+                    if (type == 'm' && args.length > 2) {
+                        data.push([command].concat(args.splice(0, 2)));
+                        type = 'l';
+                        command = command == 'm' ? 'l' : 'L';
+                    }
+
+                    while (true) {
+
+                        if (args.length == length[type]) {
+                            args.unshift(command);
+                            return data.push(args);
+                        }
+                        if (args.length < length[type]) throw new Error('malformed path data');
+                        data.push([command].concat(args.splice(0, length[type])));
+                    }
+                });
+                return data;
+            }
+
+            var number = /-?[0-9]*\.?[0-9]+(?:e[-+]?\d+)?/gi;
+
+            function parseValues(args) {
+                var numbers = args.match(number);
+                return numbers ? numbers.map(Number) : [];
+            }
+
+            return parse(svgPath);
+        }
+
+        /**
+         * Generates an SVG representing a Card
+         *
+         * @param {JSON Object} dataset
+         * @param {Object} [{ 
+         *     width = 290, 
+         *     height = 250, 
+         *     // padding
+         *     yPadding = 25, 
+         *     xPadding = 50, 
+         *     // gap between lines
+         *     zGap = 0,
+         *     yGap = 45,
+         *     strokeWidth = 5,
+         *     colors, 
+         *     yVars 
+         * }={}]
+         * @returns SVG Element
+         */
+        async function createCard(dataset, {
+            width = 290,
+            height = 250,
+            // margin
+            marginTop = 0,
+            marginLeft = 0,
+            // padding
+            yPadding = 25,
+            xPadding = 50,
+            // gap between lines
+            zGap = 0,
+            yGap = 45,
+            strokeWidth = 5,
+            colors,
+            varColor = "#fff",
+            yVars,
+            yLabels,
+            xAxisLabel = "Blocks",
+            fontTTFURL,
+        } = {}) {
+
+            // y variables
+            const yVariables = Array.isArray(yVars) ? yVars : ["Burnt Fees", "Gas Used", "Base Fee"];
+
+            const yTopLabels = Array.isArray(yLabels) ? yLabels : [];
+
+            // colors
+            const aColors = Array.isArray(colors) && colors.length ? colors : d3.schemeTableau10;
+
+            // gap between lines
+            const xGap = Math.min(xPadding - 15, 40);
+
+            // const width = 850;
+            // const height = 250;
+            const plotWidth = width - xPadding * 2;
+            const plotHeight = height - yPadding * 2;
+            const svg = createSVG(width, height);
+
+            // line height
+            const lineHeight = plotHeight / yVariables.length;
+            const xOffset = xGap + (width - (plotWidth + xGap)) / 2 - 16 / 2;
+
+            // add wrapper for area graphs
+            const gPlotWrapper = d3
+                .select(svg)
+                .style("background", "#000")
+                .append("g")
+                .attr(
+                    "transform",
+                    `translate(${[xOffset + marginLeft, (height - plotHeight) / 2 + marginTop]})`
+                );
+
+            // for text elements
+            const gText = gPlotWrapper.append("g").classed("text", true);
+            // for chart elements
+            const gPlot = gPlotWrapper.append("g").classed("plot", true);
+            // for top label text elements
+            const gTopText = gPlotWrapper.append("g").classed("top-text", true);
+
+            // Generate Zdog paths for each of the lines
+            const aLineZDogPaths = yVariables.map((yVar, i) => {
+                // SVG Path
+                const areaPath = generateAreaPath(dataset, {
+                    x: (d) => d.Block,
+                    y: (d) => d[yVar],
+                    width: plotWidth,
+                    height: lineHeight
+                });
+
+                const linePath = generateLinePath(dataset, {
+                    x: (d) => d.Block,
+                    y: (d) => d[yVar],
+                    width: plotWidth,
+                    height: lineHeight
+                });
+
+                // get Zdog path
+                return {
+                    area: pathToZdogPath(areaPath),
+                    line: pathToZdogPath(linePath),
+                    label: yVar,
+                    topLabel: yTopLabels[i] || "",
+                };
+
+            });
+
+            const iCountLines = aLineZDogPaths.length;
+            const iCenter = Math.floor(iCountLines / 2);
+            // ./
+
+            // Generate text labels
+            //
+
+            // A temp SVG for ZDog
+            const zdogSVGText = d3.select("#textsvg").attr("width", width).attr("height", height).node();
+
+            // scene to hold all text shapes
+            const sceneText = new Zdog.Illustration({
+                element: "#textsvg",
+                translate: {
+                    x: 0,
+                    y: lineHeight
+                },
+                rotate: {
+                    y: 0.4,
+                    x: 0.15
+                },
+            });
+
+            // Create a Font object
+            // You can use pretty much any .ttf or .otf font!
+            // https://github.com/jaames/zfont#zdogfont
+            const customFont = new Zdog.Font({
+                // src: 'https://cdn.jsdelivr.net/gh/jaames/zfont/demo/fredokaone.ttf'
+                src: fontTTFURL
+            });
+
+            aLineZDogPaths.forEach((zdogPath, i) => {
+                const z = (i - iCenter) * zGap;
+                const y = (i - iCenter) * yGap + 5;
+                const x = (i || 0) * xGap / 2;
+
+                // Add the label
+                new Zdog.Text({
+                    addTo: sceneText,
+                    font: customFont,
+                    value: zdogPath.label,
+                    fontSize: 10,
+                    textAlign: "right",
+                    textBaseline: "middle",
+                    color: varColor,
+                    fill: false,
+                    translate: {
+                        z: z,
+                        y: y,
+                        x: x
+                    },
+                });
+            });
+
+            // add to svg
+            sceneText.updateRenderGraph();
+
+            await (new Promise((resolve) => {
+                setTimeout(resolve, 1000);
+            }));
+
+            // add to gPlot
+            gText.node().innerHTML = zdogSVGText.innerHTML;
+            // clear svg
+            zdogSVGText.remove();
+
+            // A temp SVG for ZDog
+            const zdogSVGTopText = d3.select("#toptextsvg").attr("width", width).attr("height", height).node();
+
+            // add top labels
+            // scene to hold all text shapes
+            const sceneTopText = new Zdog.Illustration({
+                element: "#toptextsvg",
+                translate: {
+                    x: plotWidth - xPadding,
+                    y: 0
+                },
+                rotate: {
+                    y: 0.4,
+                    x: 0.15
+                },
+            });
+
+            aLineZDogPaths.forEach((zdogPath, i) => {
+                const z = (i - iCenter) * zGap;
+                const y = (i - iCenter) * yGap - 15;
+                const x = (i || 0) * xGap / 2;
+
+                // Add the top label
+                new Zdog.Text({
+                    addTo: sceneTopText,
+                    font: customFont,
+                    value: zdogPath.topLabel,
+                    fontSize: 10,
+                    textAlign: "left",
+                    textBaseline: "top",
+                    color: varColor,
+                    fill: false,
+                    translate: {
+                        z: z,
+                        y: y,
+                        x: x
+                    },
+                });
+            });
+
+            // add an x axis label for the graphs
+            new Zdog.Text({
+                addTo: sceneTopText,
+                font: customFont,
+                value: xAxisLabel,
+                fontSize: 10,
+                textAlign: "left",
+                textBaseline: "top",
+                color: varColor,
+                fill: false,
+                translate: {
+                    z: 0,
+                    y: lineHeight + 5,
+                    x: -plotWidth / 2 + xPadding / 2
+                },
+            });
+
+            // add to svg
+            sceneTopText.updateRenderGraph();
+
+            await (new Promise((resolve) => {
+                setTimeout(resolve, 1000);
+            }));
+
+            // add to gPlot
+            gTopText.node().innerHTML = zdogSVGTopText.innerHTML;
+
+            // remove element
+            zdogSVGTopText.remove();
+
+            // ./
+
+            // A temp SVG for ZDog
+            const zdogSVG = createSVG(width, height);
+
+            // scene to hold all shapes
+            const scene = new Zdog.Illustration({
+                element: zdogSVG,
+                translate: {
+                    x: 0,
+                    y: 0
+                },
+                rotate: {
+                    y: 0.5,
+                    x: 0.15
+                },
+            });
+
+            // Create line shapes
+            //
+            aLineZDogPaths.forEach((zdogPath, i) => {
+                const z = (i - iCenter) * zGap;
+                const y = (i - iCenter) * yGap;
+                const x = (i - iCenter) * xGap;
+
+                // front shape
+                const frontArea = new Zdog.Shape({
+                    addTo: scene,
+                    path: zdogPath.area,
+                    fill: true,
+                    closed: true,
+                    stroke: 0,
+                    color: aColors[i],
+                    translate: {
+                        z: z,
+                        y: y,
+                        x: x
+                    },
+                });
+
+                // back shape with lighter color
+                frontArea.copy({
+                    addTo: scene,
+                    path: zdogPath.line,
+                    fill: false,
+                    closed: false,
+                    color: d3.color(aColors[i]).brighter(),
+                    stroke: strokeWidth,
+                    translate: {
+                        z: z,
+                        y: y /* - strokeWidth / 2*/ ,
+                        x: x - strokeWidth / 3
+                    },
+                });
+            });
+
+            // add to gPlot
+            scene.updateRenderGraph();
+            // add to gPlot
+            gPlot.node().innerHTML = zdogSVG.innerHTML;
+
+            // Add animation attributes
+            // --------------------------------
+            const duration = [3, 6, 3];
+            const dx = [5, 8, 5];
+            gPlot.selectAll("path").each(function (d, i) {
+                // front shape elements have fill attribute as non none values
+                const isFront = this.getAttribute("fill") !== "none";
+                const el = d3.select(this);
+                let iLayer = Math.floor(i / 2);
+                const dur = duration[iLayer];
+                const tx = dx[iLayer];
+
+                // animate fill for front shape elements
+                if (isFront) {
+                    iLayer++;
+                    el.append("animate")
+                        .attr("attributeName", "fill-opacity")
+                        .attr("begin", "1.8s")
+                        .attr("dur", "0.2s")
+                        .attr("to", 1)
+                        .attr("fill", "freeze");
+
+                    // set fill-opacity on element to 0
+                    el.attr("fill-opacity", 0);
+                } else {
+                    // back element: animate the stroke dasharray
+                    const pathLength = this.getTotalLength() + 10 /* for extra margin */ ;
+                    el.append("animate")
+                        .attr("attributeName", "stroke-dasharray")
+                        .attr("dur", "2s")
+                        .attr("to", `${pathLength} 0`)
+                        .attr("fill", "freeze");
+
+                    // set default stroke-dasharray on element
+                    el.attr("stroke-dasharray", `0 ${pathLength}`);
+                }
+
+                const f1 = `ai${iLayer}${i}f1`;
+                const f2 = `ai${iLayer}${i}f2`;
+
+                // move left to right
+                el.append("animateTransform")
+                    .attr("id", f1)
+                    .attr("attributeName", "transform")
+                    .attr("attributeType", "XML")
+                    .attr("type", "translate")
+                    .attr("from", `-${tx} 0`)
+                    .attr("to", `${tx} 0`)
+                    .attr("dur", `${dur}s`)
+                    .attr("begin", `0s;${f2}.end`);
+                // move right to left
+                el.append("animateTransform")
+                    .attr("id", f2)
+                    .attr("attributeName", "transform")
+                    .attr("attributeType", "XML")
+                    .attr("type", "translate")
+                    .attr("from", `${tx} 0`)
+                    .attr("to", `-${tx} 0`)
+                    .attr("dur", `${dur}s`)
+                    .attr("begin", `${f1}.end`);
+            });
+
+            // --------------------------------
+            // Add curtain for animation
+            // const gCurtain = d3.select(svg).append("g");
+            // // Draw the outline of the motion path
+            // gCurtain
+            //     .append("path")
+            //     .attr("id", "curtain")
+            //     .attr(
+            //         "d",
+            //         d3.line()([
+            //             [0, 0],
+            //             [width, 0],
+            //         ])
+            //     )
+            //     .attr("fill", "none")
+            //     .attr("stroke", "none")
+            //     .attr("stroke-width", 0);
+
+            // // The curtain which will be moved about the motion path.
+            // gCurtain
+            //     .append("path")
+            //     .attr(
+            //         "d",
+            //         d3.line()([
+            //             [0, 0],
+            //             [width, 0],
+            //             [width, height],
+            //             [0, height]
+            //         ])
+            //     )
+            //     .attr("fill", "#000")
+            //     .attr("stroke", "none")
+            //     .attr("stroke-width", 0)
+            //     // Define the motion path animation
+            //     .append("animateMotion")
+            //     .attr("dur", "5s")
+            //     // .attr("repeatCount", "1")
+            //     .attr("fill", "freeze")
+            //     .append("mpath")
+            //     .attr("xlink:href", "#curtain");
+
+            return svg;
+        }
+    </script>
+
+    <script>
+        window.onload = function () {
+
+            try {
+
+                const {
+                    cardWidth,
+                    cardHeight,
+                    startColor,
+                    endColor,
+                    fromBlock,
+                    toBlock,
+                    fromBlockFontColor,
+                    toBlockFontColor,
+                    title,
+                    subtitle,
+                    subtitle_unit,
+                    subtitle2,
+                    footer_text1,
+                    footer_text2,
+                    footer_text3,
+                    footer_text4
+                } = Object.assign({
+                    cardWidth: 290,
+                    cardHeight: 500,
+                }, CARD_CONFIG);
+
+                const borderWidth = 16;
+                const innerContainerWidth = cardWidth - 2 * borderWidth;
+                const innerContainerHeight = cardHeight - 2 * borderWidth;
+                const verticalPadding = borderWidth * 4;
+                const horizontalCenter = cardWidth / 2;
+                const verticalCenter = cardHeight / 2;
+                // determine graph height
+                // set min at 150 and 
+                const graphHeight = Math.min(cardWidth, Math.max(cardHeight - 250, 150));
+                const graphWidth = cardWidth;
+                const headerTextOffset = 215; // offset for header text
+                const yPadding = 25;
+                const graphTop = Math.max(headerTextOffset, verticalCenter - (graphHeight - yPadding * 2) / 2 +
+                    borderWidth + yPadding);
+
+                const oCardConfig = Object.assign(CARD_CONFIG, {
+                    width: graphWidth,
+                    height: graphHeight,
+                    marginTop: graphTop,
+                    marginLeft: borderWidth
+                });
+
+
+
+                // access global variable dataset
+                // Init Zfont plugin and bind to Zdog
+                Zfont.init(Zdog);
+                // Zdog.waitForFonts() returns a Promise which is resolved once all the fonts added to the scene so far have been loaded
+                Zdog.waitForFonts().then(async () => {
+                    // Once the fonts are done, start the animation loop
+
+                    const svgGraph = await createCard(DATASET, oCardConfig);
+                    const gChart = svgGraph.innerHTML;
+                    console.log("**** loaded dataset ****");
+
+                    const svg = `<svg width="${cardWidth}" height="${cardHeight}" viewBox="0 0 ${cardWidth} ${cardHeight}" font-size="16px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink='http://www.w3.org/1999/xlink'>
+        <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${startColor};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${endColor};stop-opacity:1" />
+            </linearGradient>
+            <clipPath id="corners">
+                <rect width="${cardWidth}" height="${cardHeight}" rx="42" ry="42" />
+            </clipPath>
+            <path id="text-path-a" d="M40 12 H${cardWidth - 40} A28 28 0 0 1 ${cardWidth - 12} 40 V${cardHeight - 40} A28 28 0 0 1 ${cardWidth - 40} ${cardHeight - 12} H40 A28 28 0 0 1 12 ${cardHeight - 40} V40 A28 28 0 0 1 40 12 z" />
+            <path id="minimap" d="M234 444C234 457.949 242.21 463 253 463" />
+        </defs>
+        <g clip-path="url(#corners)">
+            <rect fill="url(#grad1)" x="0px" y="0px" width="${cardWidth}" height="${cardHeight}" />
+        </g>
+        <text text-rendering="optimizeSpeed">
+            <textPath startOffset="-100%" fill="${fromBlockFontColor}" font-family="'Courier New', monospace" font-size="10px" xlink:href="#text-path-a">${fromBlock} 
+            <animate additive="sum" attributeName="startOffset" from="0%" to="100%" begin="0s" dur="30s" repeatCount="indefinite" />
+            </textPath>
+            <textPath startOffset="0%" fill="${fromBlockFontColor}" font-family="'Courier New', monospace" font-size="10px" xlink:href="#text-path-a">${fromBlock}
+            <animate additive="sum" attributeName="startOffset" from="0%" to="100%" begin="0s" dur="30s" repeatCount="indefinite" />
+            </textPath>
+            <textPath startOffset="50%" fill="${toBlockFontColor}" font-family="'Courier New', monospace" font-size="10px" xlink:href="#text-path-a">${toBlock}
+            <animate additive="sum" attributeName="startOffset" from="0%" to="100%" begin="0s" dur="30s" repeatCount="indefinite" />
+            </textPath>
+            <textPath startOffset="-50%" fill="${toBlockFontColor}" font-family="'Courier New', monospace" font-size="10px" xlink:href="#text-path-a">${toBlock}
+            <animate additive="sum" attributeName="startOffset" from="0%" to="100%" begin="0s" dur="30s" repeatCount="indefinite" />
+            </textPath>
+        </text>
+        <g mask="url(#fade-symbol)">
+            <text y="${verticalPadding}" x="${horizontalCenter}" fill="white" font-family="sans-serif" font-weight="200" font-size="2em" text-anchor="middle">${title}</text>
+            <text y="${verticalPadding + 45}" x="${horizontalCenter}" fill="white" font-family="sans-serif" font-weight="200" font-size="1.5em" text-anchor="middle">${subtitle} <tspan font-size="0.75em">${subtitle_unit}</tsapn></text>
+            <text y="${verticalPadding + 80}" x="${horizontalCenter}" fill="white" font-family="sans-serif" font-weight="200" font-size="1.75em" text-anchor="middle">${subtitle2}</text>
+        </g>
+        <rect x="16" y="16" width="${innerContainerWidth}" height="${innerContainerHeight}" rx="26" ry="26" fill="rgba(0,0,0,0)" stroke="rgba(255,255,255,0.2)" />
+        
+        ${gChart}
+
+        <g style="transform:translate(0px, ${cardHeight - verticalPadding - 50}px)" mask="url(#fade-symbol)">
+            <text x="${horizontalCenter}" y="17px" font-family="sans-serif" font-size="0.75em" fill="white" text-anchor="middle">
+            ${footer_text1}
+            </text>
+        </g>
+        <g style="transform:translate(0px, ${cardHeight - verticalPadding - 30}px)" mask="url(#fade-symbol)">
+            <text x="${horizontalCenter}" y="17px" font-family="sans-serif" font-size="0.75em" fill="white" text-anchor="middle">
+            ${footer_text2}
+            </text>
+        </g>
+        <g style="transform:translate(0px, ${cardHeight - verticalPadding - 10}px)" mask="url(#fade-symbol)">
+            <text x="${horizontalCenter}" y="17px" font-family="sans-serif" font-size="0.75em" fill="white" text-anchor="middle">
+            ${footer_text3}
+            </text>
+        </g>
+        <g style="transform:translate(0px, ${cardHeight - verticalPadding + 10}px)" mask="url(#fade-symbol)">
+            <text x="${horizontalCenter}" y="17px" font-family="sans-serif" font-size="0.75em" fill="white" text-anchor="middle">
+            ${footer_text4}
+            </text>
+        </g>
+      
+    </svg>`;
+
+                    d3.select("#svg-container").node().innerHTML = svg;
+
+                    console.log("svg created");
+
+                });
+
+
+            } catch (e) {
+                console.log("createCard error", e.message);
+            }
+
+        }
+    </script>
+
+</body>
+
+</html>
