@@ -62,16 +62,26 @@ async function generateSvg() {
         // console.log('reduction', reduction);
 
         const blocks = item.blocksData.length
-        console.log('blocks', blocks);
+        console.log('blocks');
+        // console.log('blocks', blocks);
 
         const cardData = setData(item, title, _highestETHBurnt, _highestReductionPresentage,
             reduction,
             _baseFee, blocks, _gasUsed);
+        console.log('cardData');    
 
         (async () => {
             try {
+                console.log('making card svg');
                 const cardSVG = await generateCardSVG(cardData.CARD_CONFIG, cardData.CARD_CONFIG);
                 console.log('cardSVG', cardSVG);
+                const svgToSave = {
+                    svgLink: cardSVG,
+                    // tokenId: i,
+                    item_id: item._id
+                }
+                console.log('cars to save');
+                saveItem(svgToSave, 'svg_day')
             } catch (e) {
                 console.log("Error: ", e.message);
             }

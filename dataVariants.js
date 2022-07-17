@@ -5,7 +5,6 @@ let gEndDays = 7
 let gData = [];
 
 
-
 //query
 async function getWeekItems(){
   console.log(' data variants start');
@@ -39,7 +38,7 @@ async function makeWeekItem(items){
         daysData: items,
       };
       //add new week to DB
-      await saveItem(weekItem);
+      await saveItem(weekItem,'week');
       console.log('new week added');
 
       gStartDays = gEndDays 

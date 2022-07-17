@@ -1,9 +1,10 @@
 const dbService = require('../services/db.service');
 
 //SAVE
-async function save(item) {
+async function save(item, collectionType) {
     try {
-        const collection = await dbService.getCollection('item')
+        // const collection = await dbService.getCollection('item')
+        const collection = await dbService.getCollection(collectionType)
         await collection.insertOne(item)
     } catch (err) {
         // logger.error('cannot insert item', err)

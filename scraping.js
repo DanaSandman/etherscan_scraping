@@ -154,6 +154,6 @@ async function scarp(){
 // scarp()
 
 function addToDb(item){
-  saveItem(item);
+  saveItem(item , 'item');
 }
 
