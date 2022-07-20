@@ -10,6 +10,7 @@ const dbName = 'ETHER_BURN_DB'// MongoDB Atlas - prod
 var dbConn = null
 
 async function getCollection(collectionName) {
+    console.log('collection name', collectionName);
     try {
         const db = await connect()
         const collection = await db.collection(collectionName)

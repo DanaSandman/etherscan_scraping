@@ -2,8 +2,6 @@
 const createCSV = require('csv-writer').createObjectCsvWriter;
 const { getItems } = require('./item.controller');
 
-
-
 async function makeCsvFile(){
 
 const csv = createCSV({
@@ -24,8 +22,6 @@ const csv = createCSV({
 
     let data = await getItems();
     
-
-
     data.map( item => 
       item.blocksData = 0
     )
