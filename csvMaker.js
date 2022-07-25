@@ -1,6 +1,6 @@
 //nodemon csvMaker.js => for printing in Terminal
 const createCSV = require('csv-writer').createObjectCsvWriter;
-const { getItems } = require('./item.controller');
+const { getItems, getWeekItems } = require('./item/item.controller');
 
 async function makeCsvFile(){
 
@@ -20,8 +20,9 @@ const csv = createCSV({
     ],
   });
 
-    let data = await getItems();
-    
+    // let data = await getItems();
+    let data = await getWeekItems();
+
     data.map( item => 
       item.blocksData = 0
     )

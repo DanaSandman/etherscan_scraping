@@ -1,9 +1,6 @@
 const MongoClient = require('mongodb').MongoClient
 const config = require('../config');
 
-module.exports = {
-    getCollection
-}
 const dbName = 'ETHER_BURN_DB'// MongoDB Atlas - prod
 // const dbName = 'ETHER_BURN_DB_LOCAL'// MongoDB Local - dev
 
@@ -16,7 +13,6 @@ async function getCollection(collectionName) {
         const collection = await db.collection(collectionName)
         return collection
     } catch (err) {
-        // logger.error('Failed to get Mongo collection', err)
         console.log('Failed to get Mongo collection', err);
         throw err
     }
@@ -36,6 +32,6 @@ async function connect() {
     }
 }
 
-
-
-
+module.exports = {
+    getCollection
+}

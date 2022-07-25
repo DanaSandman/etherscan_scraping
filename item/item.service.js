@@ -17,10 +17,12 @@ async function query(filterBy = {}) {
     criteria = _buildCriteria(filterBy);
     try {
         const collection = await dbService.getCollection('item');
-        const items = await collection.find().toArray();
+        // const items = await collection.find().toArray();
+        const items = await collection.find().sort({$natural:-1}).limit(52).toArray();
         // const items = await collection.find( { qty: { $gt: 4 } } ).toArray();
-        // const items = await collection.find().limit(3).toArray()
+        // const items = await collection.find().limit(3).toArray()+
         console.log('iteems from service length',items.length );
+        // console.log('iteems from service length',items);
         return items
     } catch (err) {
         // logger.error('cannot find items', err)
@@ -28,11 +30,11 @@ async function query(filterBy = {}) {
         throw err
     }
 };
-queryWeeks()
+// queryWeeks()
 async function queryWeeks(){
     try {
     const collection = await dbService.getCollection('week');
-    const weeks = await collection.find().limit(3).toArray();
+    const weeks = await collection.find().toArray();
     console.log('iteems from service length',weeks );
     return weeks
 } catch (err) {
@@ -43,7 +45,8 @@ async function queryWeeks(){
 };
 module.exports = {
     save,
-    query
+    query,
+    queryWeeks
 };
 
 function _buildCriteria(filterBy) {
