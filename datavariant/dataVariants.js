@@ -3,18 +3,19 @@ const {
   saveItem
 } = require('../item/item.controller');
 
-let gStartDays = 0
-let gEndDays = 7
+let gStartDays = 7
+let gEndDays = 14
 let gData = [];
 
 //query
 async function getWeekItems() {
   console.log(' data variants start');
-  gData = await getItems();
-  let items = gData.slice(gStartDays, gEndDays);
-  console.log('after slicee');
-  console.log('items.length', items.length);
-  makeWeekItem(items)
+  console.log('gEndDays',gEndDays);
+  gData = await getItems(gEndDays);
+  // let items = gData.slice(gStartDays, gEndDays);
+  // console.log('gData', gData);
+  console.log('items.length', gData.length);
+  makeWeekItem(gData.reverse())
 };
 //create
 async function makeWeekItem(items) {
@@ -48,7 +49,8 @@ async function makeWeekItem(items) {
   console.log('gEndDays', gEndDays);
   console.log('gData.length', gData.length);
 
-  if (gEndDays <= gData.length) {
+  // if (gEndDays <= gData.length) {
+  if (gEndDays <= 297) {
     getWeekItems()
   } else {
     console.log('The End');

@@ -12,13 +12,15 @@ async function save(item, collectionType) {
     }
 };
 //QUERY
-async function query(filterBy = {}) {
-    console.log('query service');
-    criteria = _buildCriteria(filterBy);
+async function query(start) {
+    // console.log('query service', filterBy);
+    // criteria = _buildCriteria(filterBy);
+    console.log('start',start);
+    
     try {
         const collection = await dbService.getCollection('item');
-        // const items = await collection.find().toArray();
-        const items = await collection.find().sort({$natural:-1}).limit(52).toArray();
+        // const items = await collection.find(filterBy).limit(3).toArray();
+        const items = await collection.find().skip(start).limit(7).toArray();
         // const items = await collection.find( { qty: { $gt: 4 } } ).toArray();
         // const items = await collection.find().limit(3).toArray()+
         console.log('iteems from service length',items.length );

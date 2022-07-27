@@ -19,10 +19,10 @@ async function saveItem(item, collectionName) {
 };
 
 //LIST
-async function getItems() {
+async function getItems(start) {
     console.log('get items controller');
     try {
-        const items = await itemService.query();
+        const items = await itemService.query(start);
         console.log('controller after queryyy');
         return items
     } catch (err) {
@@ -31,7 +31,7 @@ async function getItems() {
         // })
     }
 };
-
+//LIST ITEMS
 async function getWeekItems() {
     console.log('get items controller');
     try {

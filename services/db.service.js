@@ -11,6 +11,7 @@ async function getCollection(collectionName) {
     try {
         const db = await connect()
         const collection = await db.collection(collectionName)
+        // console.log('collection', collection);
         return collection
     } catch (err) {
         console.log('Failed to get Mongo collection', err);
